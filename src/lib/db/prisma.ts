@@ -3,7 +3,17 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { DEFAULT_USER_ID } from "@/lib/constants";
 
 function createPrismaClient(): PrismaClient {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+  const url = new URL(process.env.DATABASE_URL!);
+  // Strip Prisma-specific params that pg doesn't understand
+  url.searchParams.delete("pgbouncer");
+  url.searchParams.delete("connection_limit");
+
+  const adapter = new PrismaPg({
+    connectionString: url.toString(),
+    max: 1, // required for serverless (Vercel)
+    ssl: { rejectUnauthorized: false }, // required for Supabase
+  });
+
   return new PrismaClient({ adapter });
 }
 
