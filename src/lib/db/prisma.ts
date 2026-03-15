@@ -1,10 +1,10 @@
 import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { DEFAULT_USER_ID } from "@/lib/constants";
 
 function createPrismaClient(): PrismaClient {
-  return new PrismaClient({
-    datasourceUrl: process.env.DATABASE_URL,
-  });
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+  return new PrismaClient({ adapter });
 }
 
 const globalForPrisma = globalThis as unknown as {
