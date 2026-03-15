@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { Providers } from "@/components/layout/Providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,10 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="antialiased bg-[#0F172A] text-[#E5E7EB] min-h-screen font-(family-name:var(--font-inter))">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 min-h-screen overflow-auto">{children}</main>
-        </div>
+        <Providers>
+          <div className="flex min-h-screen">
+            <Sidebar />
+            <main className="flex-1 min-h-screen overflow-auto">{children}</main>
+          </div>
+        </Providers>
       </body>
     </html>
   );

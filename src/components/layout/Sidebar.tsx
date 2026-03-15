@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -14,6 +15,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <aside className="w-56 shrink-0 bg-[#111827] border-r border-[#1F2937] flex flex-col h-screen sticky top-0">
@@ -56,7 +58,28 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-[#1F2937]">
+      <div className="px-5 py-4 border-t border-[#1F2937] space-y-3">
+        {session?.user && (
+          <div className="flex items-center gap-2 min-w-0">
+            {session.user.image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={session.user.image}
+                alt="avatar"
+                className="w-6 h-6 rounded-full shrink-0"
+              />
+            )}
+            <span className="text-[#9CA3AF] text-xs truncate">
+              {session.user.email}
+            </span>
+          </div>
+        )}
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="w-full text-left text-[#6B7280] hover:text-[#EF4444] text-xs transition-colors"
+        >
+          Sign out
+        </button>
         <p className="text-[#4B5563] text-xs">LevelUp v0.1</p>
       </div>
     </aside>
