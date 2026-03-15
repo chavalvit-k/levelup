@@ -1,0 +1,122 @@
+// This is your Prisma schema file
+// LevelUp - Gamified Productivity App
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── User ────────────────────────────────────────────────────────────────────
+
+model User {
+  id                String   @id @default("default_user")
+  level             Int      @default(0)
+  xp                Int      @default(0)  // XP within current level
+  totalXp           Int      @default(0)  // Cumulative XP for all-time tracking
+  streak            Int      @default(0)
+  longestStreak     Int      @default(0)
+  lastCompletedDate String?  // ISO date string "YYYY-MM-DD"
+  characterColor    String   @default("#6366F1")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  dailyTasks     DailyTask[]
+  generalTasks   GeneralTask[]
+  rewards        Reward[]
+  cosmetics      CosmeticItem[]
+
+  @@map("users")
+}
+
+// ─── Daily Tasks ─────────────────────────────────────────────────────────────
+
+model DailyTask {
+  id               String     @id @default(cuid())
+  userId           String     @default("default_user")
+  title            String
+  date             String     // "YYYY-MM-DD"
+  difficulty       String     // "trivial" | "standard" | "challenging" | "heroic"
+  taskType         String     // "timed" | "non_timed"
+  requiredDuration Int?       // seconds (only for timed tasks)
+  elapsedTime      Int        @default(0)  // seconds tracked by timer
+  status           String     @default("pending")  // "pending" | "done" | "failed"
+  isHeroTask       Boolean    @default(false)
+  xpEarned         Int        @default(0)
+  completedAt      DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id])
+  subtasks Subtask[]
+
+  @@map("daily_tasks")
+}
+
+model Subtask {
+  id          String    @id @default(cuid())
+  dailyTaskId String
+  title       String
+  done        Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  dailyTask DailyTask @relation(fields: [dailyTaskId], references: [id], onDelete: Cascade)
+
+  @@map("subtasks")
+}
+
+// ─── General Tasks ───────────────────────────────────────────────────────────
+
+model GeneralTask {
+  id        String    @id @default(cuid())
+  userId    String    @default("default_user")
+  title     String
+  priority  String    @default("medium")  // "low" | "medium" | "high" | "urgent"
+  deadline  String?   // "YYYY-MM-DD"
+  done      Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("general_tasks")
+}
+
+// ─── Rewards ─────────────────────────────────────────────────────────────────
+
+model Reward {
+  id          String    @id @default(cuid())
+  userId      String    @default("default_user")
+  type        String    // "streak" | "level_milestone"
+  milestone   Int       // streak count or level number
+  description String    @default("")
+  claimed     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("rewards")
+}
+
+// ─── Character Cosmetics ─────────────────────────────────────────────────────
+
+model CosmeticItem {
+  id          String    @id @default(cuid())
+  userId      String    @default("default_user")
+  slot        String    // "color" | "glasses" | "hat" | "background"
+  color       String    @default("#6366F1")
+  equipped    Boolean   @default(false)
+  unlockedAt  Int       // level at which this was unlocked
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("cosmetic_items")
+}
+
